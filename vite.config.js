@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-  base: './',
+  base: '/cost_man/',
   build: {
     rollupOptions: {
       output: {
