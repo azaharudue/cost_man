@@ -1,0 +1,15 @@
+{
+  "appId": "com.pwacosts.app",
+  "appName": "PWA Costs",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0
+    }
+  },
+  "server": {
+    "url": "http://localhost:8100",
+    "cleartext": true
+  }
+}
