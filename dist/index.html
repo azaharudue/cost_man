@@ -129,16 +129,33 @@ function showDashboard() {
   main.innerHTML = html;
 }
 
+let calendarDate = null;
+
 function showCalendar() {
   const main = document.getElementById('main');
   const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
+  
+  if (!calendarDate) {
+    const saved = localStorage.getItem('calendarDate');
+    calendarDate = saved ? new Date(saved) : now;
+  }
+  
+  const year = calendarDate.getFullYear();
+  const month = calendarDate.getMonth();
+  const today = new Date();
+  const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
   
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   
-  let html = '<div class="card"><h3>' + now.toLocaleDateString('en-US', {month:'long', year:'numeric'}) + '</h3>';
+  let html = '<div class="card">';
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px;">';
+  html += '<button id="prevBtn" style="min-height:40px;flex:0.2;">← Prev</button>';
+  html += '<div style="text-align:center;flex:1;"><h3 style="margin:0;">' + calendarDate.toLocaleDateString('en-US', {month:'long', year:'numeric'}) + '</h3></div>';
+  html += '<button id="nextBtn" style="min-height:40px;flex:0.2;">Next →</button>';
+  html += '</div>';
+  html += '<button id="todayBtn" style="width:100%;margin-bottom:8px;background:#4CAF50;min-height:44px;">📍 Jump to Today</button>';
+  
   html += '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:12px;">';
   
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -149,13 +166,47 @@ function showCalendar() {
   }
   
   for (let d = 1; d <= daysInMonth; d++) {
-    html += '<button style="padding:8px;min-height:44px;">' + d + '</button>';
+    const dateStr = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+    const isToday = dateStr === todayStr;
+    const data = loadData();
+    const dayExpenses = data.filter(e => e.date.slice(0, 10) === dateStr);
+    const dayTotal = dayExpenses.reduce((s, e) => s + Number(e.amount), 0);
+    
+    const bgcolor = isToday ? '#2b6cb0' : '#f5f5f5';
+    const textcolor = isToday ? 'white' : '#333';
+    const border = isToday ? '2px solid #1e4f85' : '1px solid #ddd';
+    
+    html += '<button style="padding:8px;min-height:50px;background:' + bgcolor + ';color:' + textcolor + ';border:' + border + ';cursor:pointer;font-size:14px;">';
+    html += '<div style="font-weight:bold;">' + d + '</div>';
+    if (dayTotal > 0) {
+      html += '<div style="font-size:11px;margin-top:2px;">' + formatCurrency(dayTotal) + '</div>';
+    }
+    html += '</button>';
   }
   
   html += '</div></div>';
   html += '<button onclick="openAddExpense()" style="width:100%;padding:12px;margin-top:12px;">+ Add Expense</button>';
   
   main.innerHTML = html;
+  
+  // Attach event listeners after rendering
+  document.getElementById('prevBtn').addEventListener('click', () => {
+    calendarDate.setMonth(calendarDate.getMonth() - 1);
+    localStorage.setItem('calendarDate', calendarDate.toISOString());
+    showCalendar();
+  });
+  
+  document.getElementById('nextBtn').addEventListener('click', () => {
+    calendarDate.setMonth(calendarDate.getMonth() + 1);
+    localStorage.setItem('calendarDate', calendarDate.toISOString());
+    showCalendar();
+  });
+  
+  document.getElementById('todayBtn').addEventListener('click', () => {
+    calendarDate = new Date();
+    localStorage.removeItem('calendarDate');
+    showCalendar();
+  });
 }
 
 function showDetails() {
