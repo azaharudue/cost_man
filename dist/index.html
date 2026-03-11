@@ -281,9 +281,24 @@ function closeModal() {
   document.getElementById('modal').classList.remove('show');
 }
 
+// Clear old caches and register new service worker
+if ('caches' in window) {
+  caches.keys().then(names => {
+    names.forEach(name => {
+      if (name !== 'pwa-costs-v2') {
+        caches.delete(name);
+      }
+    });
+  });
+}
+
 // Initialize
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(() => {});
+  navigator.serviceWorker.getRegistrations().then(registrations => {
+    registrations.forEach(reg => reg.unregister());
+  }).then(() => {
+    navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW error:', err));
+  });
 }
 
 // Show dashboard on load
