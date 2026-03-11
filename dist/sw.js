@@ -1,10 +1,10 @@
 const CACHE_NAME = 'pwa-costs-v1';
 const FILES_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/src/styles.css',
-  '/src/main.js',
-  '/manifest.webmanifest'
+  './',
+  './index.html',
+  './styles.css',
+  './main.js',
+  './manifest.webmanifest'
 ];
 
 self.addEventListener('install', (e) => {

@@ -1,5 +1,3 @@
-import './styles.css';
-
 let deferredPrompt = null;
 
 function $(sel) { return document.querySelector(sel); }
