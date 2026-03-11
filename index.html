@@ -144,13 +144,17 @@ function showCalendar() {
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   days.forEach(d => html += '<div style="text-align:center;font-weight:bold;font-size:12px;">' + d + '</div>');
   
-  for (let i = 0; i < firstDay; i++) html += '<div></div>';
-  for (let d = 1; d <= daysInMonth; d++) {
-    const dateStr = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
-    html += '<button style="padding:8px;aspect-ratio:1;" onclick="alert(\'' + dateStr + '\')">' + d + '</button>';
+  for (let i = 0; i < firstDay; i++) {
+    html += '<div style="text-align:center;color:#ccc;">-</div>';
   }
   
-  html += '</div></div><button onclick="openAddExpense()" style="width:100%;padding:12px;margin-top:12px;">+ Add Expense</button>';
+  for (let d = 1; d <= daysInMonth; d++) {
+    html += '<button style="padding:8px;min-height:44px;">' + d + '</button>';
+  }
+  
+  html += '</div></div>';
+  html += '<button onclick="openAddExpense()" style="width:100%;padding:12px;margin-top:12px;">+ Add Expense</button>';
+  
   main.innerHTML = html;
 }
 
@@ -163,19 +167,35 @@ function showDetails() {
   const months = {};
   data.forEach(e => {
     const mk = getMonthKey(e.date);
-    months[mk] = (months[mk] || 0) + Number(e.amount);
+    if (!months[mk]) months[mk] = 0;
+    months[mk] += Number(e.amount);
   });
   
-  const maxAmount = Math.max(...Object.values(months) || [100]);
+  const values = Object.values(months);
+  const maxAmount = values.length > 0 ? Math.max(...values) : 100;
   
   html += '<div style="margin-top:12px;">';
-  Object.entries(months).sort().forEach(([mk, amt]) => {
-    const monthName = new Date(mk + '-01').toLocaleDateString('en-US', {month:'short'});
-    const pct = (amt / maxAmount * 100).toFixed(0);
-    html += '<div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;margin-bottom:2px;"><span>' + monthName + '</span><strong>' + formatCurrency(amt) + '</strong></div><div style="width:100%;height:20px;background:#eee;border-radius:2px;"><div style="width:' + pct + '%;height:100%;background:#2b6cb0;border-radius:2px;"></div></div></div>';
-  });
-  html += '</div></div>';
   
+  const sortedMonths = Object.entries(months).sort();
+  if (sortedMonths.length === 0) {
+    html += '<p style="color:#999; text-align:center;">No expenses yet</p>';
+  } else {
+    sortedMonths.forEach(([mk, amt]) => {
+      try {
+        const monthName = new Date(mk + '-01').toLocaleDateString('en-US', {month:'short'});
+        const pct = Math.round((amt / maxAmount) * 100);
+        html += '<div style="margin-bottom:12px;">';
+        html += '<div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-weight:bold;">' + monthName + '</span><strong>' + formatCurrency(amt) + '</strong></div>';
+        html += '<div style="width:100%;height:20px;background:#eee;border-radius:4px;overflow:hidden;">';
+        html += '<div style="width:' + pct + '%;height:100%;background:#2b6cb0;"></div>';
+        html += '</div></div>';
+      } catch(e) {
+        console.error('Error rendering month', mk, e);
+      }
+    });
+  }
+  
+  html += '</div></div>';
   main.innerHTML = html;
 }
 
